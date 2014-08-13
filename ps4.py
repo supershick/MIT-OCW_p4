@@ -121,6 +121,46 @@ def build_coder(shift):
     (The order of the key-value pairs may be different.)
     """
     ### TODO.
+    lowercase = string.lowercase
+    uppercase = string.uppercase
+    space = ' '
+    lowerstringlist = []
+    upperstringlist = []
+    
+    # we will create the entire coder with uppercase, lowercase, and space
+    code = dict.fromkeys(lowercase, 0)
+    for key in uppercase:
+        code[key] = 0
+    code[space] = 0
+    
+    # we will create a list that starts with lowercase, then uppercase, then space
+    for letter in lowercase:
+        lowerstringlist.append(letter)
+    for letter in uppercase:
+        upperstringlist.append(letter)
+    lowerstringlist.append(space)
+    upperstringlist.append(space)
+    
+    if shift > 0:
+        # if shift is positive we will go forwards in the list
+        for index in xrange(0, len(lowerstringlist)):
+            if (index + shift) < len(lowerstringlist):
+                code[lowerstringlist[index]] = lowerstringlist[index + shift]
+            else:
+                # in case index + shift is greater than 27, we subtract 27 to
+                # keep the index within range. It's almost like telling time on
+                # a 24 hour clock.
+                code[lowerstringlist[index]] = lowerstringlist[index + shift - 27]
+    else:
+        # if shift is negative, we will have to go backwards in the list
+        for index in xrange(0, len(lowerstringlist)):
+            if abs(index + shift) < len(lowerstringlist):
+                code[lowerstringlist[index]] = lowerstringlist[index + shift]
+            else:
+                code[lowerstringlist[index]] = lowerstringlist[index + shift - 26]
+            
+    return code
+
 
 def build_encoder(shift):
     """
