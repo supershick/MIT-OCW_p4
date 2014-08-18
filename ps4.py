@@ -133,31 +133,35 @@ def build_coder(shift):
         code[key] = 0
     code[space] = 0
     
-    # we will create a list that starts with lowercase, then uppercase, then space
+    # we will create a list that starts with lowercase, then space, and then uppercase
     for letter in lowercase:
         lowerstringlist.append(letter)
+    lowerstringlist.append(space)
     for letter in uppercase:
         upperstringlist.append(letter)
-    lowerstringlist.append(space)
-    upperstringlist.append(space)
-    
+    upperstringlist.append(space)    
+        
     if shift > 0:
         # if shift is positive we will go forwards in the list
+        # we include one less item so that the upperstringlist does not include the space
+        for index in xrange(0, len(upperstringlist) - 1):
+            # we subtract 27 to keep the index within range
+            # It's almost like telling time on a 24 hour clock
+            code[upperstringlist[index]] = upperstringlist[index + shift - 27]
+             
         for index in xrange(0, len(lowerstringlist)):
-            if (index + shift) < len(lowerstringlist):
-                code[lowerstringlist[index]] = lowerstringlist[index + shift]
-            else:
-                # in case index + shift is greater than 27, we subtract 27 to
-                # keep the index within range. It's almost like telling time on
-                # a 24 hour clock.
-                code[lowerstringlist[index]] = lowerstringlist[index + shift - 27]
+            # we subtract 27 to keep the index within range
+            # It's almost like telling time on a 24 hour clock.
+            code[lowerstringlist[index]] = lowerstringlist[index + shift - 27]
     else:
         # if shift is negative, we will have to go backwards in the list
+        # we don't need to check
+        # we include one less item so that the upperstringlist does not include the space
+        for index in xrange(0, len(upperstringlist) - 1):
+            code[upperstringlist[index]] = upperstringlist[index + shift]
+        
         for index in xrange(0, len(lowerstringlist)):
-            if abs(index + shift) < len(lowerstringlist):
-                code[lowerstringlist[index]] = lowerstringlist[index + shift]
-            else:
-                code[lowerstringlist[index]] = lowerstringlist[index + shift - 26]
+            code[lowerstringlist[index]] = lowerstringlist[index + shift]
             
     return code
 
@@ -190,6 +194,7 @@ def build_encoder(shift):
     HINT : Use build_coder.
     """
     ### TODO.
+    return build_coder(shift)
 
 def build_decoder(shift):
     """
@@ -220,6 +225,7 @@ def build_decoder(shift):
     HINT : Use build_coder.
     """
     ### TODO.
+    return build_coder(-shift)
  
 
 def apply_coder(text, coder):
@@ -237,7 +243,17 @@ def apply_coder(text, coder):
     'Hello, world!'
     """
     ### TODO.
-  
+    
+    # we will start with a blank string
+    encodedWord = ''
+    
+    # for every letter in the plaintext, we will encoded it from the encoder
+    # if the letter doesn't exist, we will just add the letter to the string
+    # this is for the punctuations that aren't in the encoder
+    for letter in text:
+        encodedWord += coder.get(letter, letter)
+    
+    return encodedWord
 
 def apply_shift(text, shift):
     """
@@ -257,6 +273,18 @@ def apply_shift(text, shift):
     'Apq hq hiham a.'
     """
     ### TODO.
+    
+    # we will start with a blank string
+    shiftedWord = ''
+    
+    # we need the key-value pairs so we will call the coder function
+    shifter = build_coder(shift)
+    
+    # for each letter, let's find the value for each key and create new word
+    for letter in text:
+        shiftedWord += shifter.get(letter, letter)
+        
+    return shiftedWord
    
 #
 # Problem 2: Codebreaking.
@@ -278,6 +306,25 @@ def find_best_shift(wordlist, text):
     'Hello, world!'
     """
     ### TODO
+    
+    shiftAmount = 0
+    allValidWords = False
+    
+    while not allValidWords:
+        shiftText = apply_coder(text, build_decoder(shiftAmount))
+        shiftTextList = shiftText.split()
+        
+        # we will check if each word is a valid word
+        for word in shiftTextList:
+            if is_word(wordlist, word):
+                allValidWords =  True
+            else:
+                allValidWords = False
+                shiftAmount += 1
+                break
+    
+    return shiftAmount
+    
    
 #
 # Problem 3: Multi-level encryption.
@@ -299,6 +346,32 @@ def apply_shifts(text, shifts):
     'JufYkaolfapxQdrnzmasmRyrpfdvpmEurrb?'
     """
     ### TODO.
+    
+    # if there are no more shift rules left in the array, return the final
+    # caesar text to the user
+    if len(shifts) == 0:
+        return text
+    else:
+        # save the start position and shift amount into variables
+        startPos = shifts[0][0]
+        shiftAmount = shifts[0][1]
+        
+        # save the portion that we are not shifting into a variable
+        unshifted = text[0:startPos]
+        
+        # save the other portion that we ARE shifting into another variable
+        # and then shift that text given the shift amount
+        textToShift = text[startPos:]
+        shiftedWord = apply_shift(textToShift, shiftAmount)
+        
+        # add the two strings together and then recursively shift the entire
+        # text again until we have no more shift rules left in the array
+        text = unshifted + shiftedWord
+        # since we worked on the first shift rule item, we pass everything
+        # else after it onto the next iteration of this function..until we get 0
+        text = apply_shifts(text, shifts[1:])
+    
+        return text
  
 #
 # Problem 4: Multi-level decryption.
