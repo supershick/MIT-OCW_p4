@@ -155,8 +155,8 @@ def build_coder(shift):
             code[lowerstringlist[index]] = lowerstringlist[index + shift - 27]
     else:
         # if shift is negative, we will have to go backwards in the list
-        # we don't need to check
-        # we include one less item so that the upperstringlist does not include the space
+        # we include one less item so that the upperstringlist does not include the space in the key
+        # the space key already comes from the lowerstringlist
         for index in xrange(0, len(upperstringlist) - 1):
             code[upperstringlist[index]] = upperstringlist[index + shift]
         
@@ -313,6 +313,7 @@ def find_best_shift(wordlist, text):
     while not allValidWords:
         shiftText = apply_coder(text, build_decoder(shiftAmount))
         shiftTextList = shiftText.split()
+        print shiftTextList
         
         # we will check if each word is a valid word
         for word in shiftTextList:
@@ -321,6 +322,7 @@ def find_best_shift(wordlist, text):
             else:
                 allValidWords = False
                 shiftAmount += 1
+                print shiftAmount
                 break
     
     return shiftAmount
@@ -406,6 +408,15 @@ def find_best_shifts(wordlist, text):
     >>> print apply_shifts(s, shifts)
     Do Androids Dream of Electric Sheep?
     """
+    tupleList = []
+    tupleList = find_best_shifts_rec(wordlist, text, 0)
+
+    shiftAmount = 1
+
+    shiftedWord = apply_coder(text, build_decoder(shiftAmount))
+    shiftedWordList = shiftedWord.split()
+    #if is_word(wordlist, shiftedWordList[0]):
+
 
 def find_best_shifts_rec(wordlist, text, start):
     """
@@ -422,6 +433,22 @@ def find_best_shifts_rec(wordlist, text, start):
     returns: list of tuples.  each tuple is (position in text, amount of shift)
     """
     ### TODO.
+    index = 1
+    while index < 27:
+        shiftedText = apply_coder(text[start:], build_decoder(index))
+        shiftedTextList = shiftedText.split()
+
+        if is_word(wordlist, shiftedTextList[0]):
+            shiftAmount = index
+        else:
+            index += 1
+
+    if len(shiftedTextList) > 1:
+        startPos = len(shiftedTextList[0]) + 1
+        find_best_shifts_rec(wordlist, shiftedText[startPos:], startPos)
+    else:
+        return (start, shiftAmount)
+
 
 
 def decrypt_fable():

@@ -4,3 +4,10 @@ Write out your algorithm for Problem 2 here:
 
 
 Write out your algorithm for Problem 4 here:
+1) Apply shift to the text
+2) Split the shifted text
+3) If the first value is a word,
+    3a) First tuple is (0, shift amount)
+    3b) Recursively call function again with start position as len(first word) + 1
+4) Else
+    4a) Increase the shift amount by 1
